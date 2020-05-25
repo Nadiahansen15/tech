@@ -1,21 +1,25 @@
+import configparser
 import socket
-import threading
 from datetime import datetime
-from time import perf_counter
-import sys
 
 # import timeout
 
 # Create a UDP socket
+from typing import re
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # Bind the socket to the port
-server_address = ('localhost', 10000)
+server_address = ('localhost', 1024)
 print('starting up on {} port {}'.format(*server_address))
 sock.bind(server_address)
 hostname = socket.gethostname()
 IPAddr = socket.gethostbyname(hostname)
 sock.settimeout(4)
 time = datetime.now()
+mc = 1
+
+config = configparser.ConfigParser()
+config.read('con.ini')
 
 connection = True
 package_count = 0
@@ -83,15 +87,16 @@ def first_msg():
 # send messages
 def send_msg(insert_msg, insert_address):
     if insert_msg.startswith('msg-'):
-        pre_counter = int(insert_msg[4])
-        counter = int(insert_msg[4]) + 1
+        pre_count1 = insert_msg.split('-')
+        pre_count2 = pre_count1[1].split('=')
         # checking the count is in order
-        if counter - pre_counter == 1 and 'msg-' in insert_msg:
+        global mc
+        if mc - int(pre_count2[0] == 1 and insert_msg.startswith('msg-')):
             global package_count
             package_count += 1
             print(insert_msg)
 
-            if package_count >= 25:
+            if package_count >= config.getint('Max', 'MaxPackage'):
                 allowedmessage = 'max 25 allowed'
                 sent = sock.sendto(allowedmessage.encode(), address)
                 print(allowedmessage)
@@ -101,7 +106,8 @@ def send_msg(insert_msg, insert_address):
         print('received {} bytes from {}'.format(len(insert_msg), insert_address))
         # respond client
         sent = sock.sendto('I am server'.encode(), insert_address)
-        print('res-', counter, '= sent {} bytes back to {}'.format(sent, insert_address))
+        print('res-', str(mc), '= sent {} bytes back to {}'.format(sent, insert_address))
+        mc += 2
 
     elif insert_msg.startswith('con-h '):
         print('client alive: ' + insert_msg)

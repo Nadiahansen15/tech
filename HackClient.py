@@ -13,8 +13,8 @@ hostname = socket.gethostname()
 IPAddr = socket.gethostbyname(hostname)
 # print("Your Computer Name is:" + hostname)
 # print("Your Computer IP Address is: " + IPAddr)
-server_address = ('localhost', 1024)
-counter = 0
+server_address = ('localhost', 10000)
+counter = 1
 count = 0
 max_package = parser.getboolean('Max', 'Start')
 
@@ -24,7 +24,7 @@ keep_a_live = True
 
 def heartbeat():
     if keep_a_live:
-        threading.Timer(parser.getint('Heartbeat', 'Time'), heartbeat).start()
+        threading.Timer(3.0, heartbeat).start()
         heartmsg = 'con-h 0x00'
         sent = sock.sendto(heartmsg.encode(), server_address)
     else:
